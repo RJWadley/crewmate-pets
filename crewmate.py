@@ -86,7 +86,7 @@ class Crewmate(QMainWindow):
             pixmap = QImage(filename)
             pixmap = toColor(pixmap, self.color)
             pixmap = QPixmap.fromImage(pixmap)
-            ##print("loaded", filename, "for crewmate", self.id)
+            print("loaded", filename, "for crewmate", self.id)
             self.walk.append(pixmap)
 
         #sprite loop for beam in animation
@@ -99,7 +99,7 @@ class Crewmate(QMainWindow):
             if i >= 32:
                 pixmap = toColor(pixmap, self.color)
             pixmap = QPixmap.fromImage(pixmap)
-            ##print("loaded", filename, "for crewmate", self.id)
+            print("loaded", filename, "for crewmate", self.id)
             self.beamIn.append(pixmap)
 
         #sprite loop for death
@@ -110,7 +110,7 @@ class Crewmate(QMainWindow):
             pixmap = QImage(filename)
             pixmap = toColor(pixmap, self.color)
             pixmap = QPixmap.fromImage(pixmap)
-            ##print("loaded", filename, "for crewmate", self.id)
+            print("loaded", filename, "for crewmate", self.id)
             self.deathSprite.append(pixmap)
 
         #set first pixmap to beginning of beamIn

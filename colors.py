@@ -5,7 +5,7 @@ import colorsys
 
 def toColor(im, color):
 
-    alpha = im.alphaChannel()
+    #alpha = im.alphaChannel()
 
     if color == "Lime":
         hue = 113
@@ -59,6 +59,6 @@ def toColor(im, color):
             if (abs(r - 55) <= SHADOW_TOLERANCE and abs(g - 59) <= SHADOW_TOLERANCE and abs(b - 60) <= SHADOW_TOLERANCE):
                 alpha.setPixel(x, y, 100)
 
-    im.setAlphaChannel(alpha);
+    #im.setAlphaChannel(alpha);
 
     return im

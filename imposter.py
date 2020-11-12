@@ -65,6 +65,9 @@ class Imposter(Crewmate):
                         #print("kill")
                         self.dx = (crewmate.x - self.x) * 2 / 10
                         self.dy = (crewmate.y - self.y) * 2 / 10
+                        while abs(self.dx) < 2 and abs(self.dy) < 2:
+                            self.dx *= 1.01
+                            self.dy *= 1.01
                         self.target = None;
                         self.activity = "idle"
                         self.cooldown = 60 * 30
