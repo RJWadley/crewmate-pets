@@ -5,7 +5,7 @@ import colorsys
 
 def toColor(im, color):
 
-    #alpha = im.alphaChannel()
+    alpha = im.alphaChannel()
 
     if color == "Lime":
         hue = 113
@@ -27,7 +27,6 @@ def toColor(im, color):
     for x in range(im.width()):
         for y in range(im.height()):
             r, g, b, a = QColor(im.pixel(x ,y)).getRgb()
-            a = qAlpha(im.pixel(x, y))
             if (abs(r - g) < 5 and abs(g - b) < 5):
                 pass
             elif (g >= 100):
@@ -59,6 +58,6 @@ def toColor(im, color):
             if (abs(r - 55) <= SHADOW_TOLERANCE and abs(g - 59) <= SHADOW_TOLERANCE and abs(b - 60) <= SHADOW_TOLERANCE):
                 alpha.setPixel(x, y, 100)
 
-    #im.setAlphaChannel(alpha);
+    im.setAlphaChannel(alpha);
 
     return im

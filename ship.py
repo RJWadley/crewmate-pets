@@ -49,7 +49,7 @@ class Ship():
             for crewmate in self.crewmates:
                 crewmate.speed = 1
                 crewmate.progress = -999
-                crewmate.destination = [-2000, 700]
+                crewmate.destination = [-200, random.randrange(0,self.screen.height())]
             QTimer.singleShot(3000, self.restart)
             return
 
