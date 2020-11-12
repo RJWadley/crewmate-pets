@@ -1,4 +1,6 @@
 import sys
+import math
+import random
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from colors import *
@@ -8,18 +10,23 @@ from imposter import Imposter
 class Ship():
 
     def __init__(self, numCrewmates, display):
+        self.numCrewmates = numCrewmates
         self.crewmates = []
-        colors = ["Lime", "Red", "Cyan", "Orange", "Yellow"]
+        colors = ["Lime", "Red", "Cyan", "Orange", "Yellow", "Purple", "Pink", "Blue"]
+        random.shuffle(colors)
+        #fixme print(colors[numCrewmates - 1])
         self.crewmates = []
         self.display = display
         self.screen = display.size()
+        self.meeting = False
+        self.sus = None
 
         for i in range(numCrewmates - 1):
             crewmate = Crewmate(colors[i], i, self.screen)
             self.crewmates.append(crewmate)
             crewmate.show()
 
-        self.imposter = Imposter(self.crewmates, colors[i + 1], i + 1, self.screen)
+        self.imposter = Imposter(self, colors[i + 1], i + 1, self.screen)
         self.crewmates.append(self.imposter)
         self.imposter.show()
 
@@ -37,6 +44,14 @@ class Ship():
         #exit if no crewmates
         if len(self.crewmates) == 0:
             sys.exit()
+        #restart if needed
+        if (len(self.crewmates) <= 2 or self.imposter.dead == True or self.imposter.exists == False) and self.meeting == False:
+            for crewmate in self.crewmates:
+                crewmate.speed = 1
+                crewmate.progress = -999
+                crewmate.destination = [-2000, 700]
+            QTimer.singleShot(3000, self.restart)
+            return
 
         #remove crewmates that don't exist
         for i in range(len(self.crewmates)):
@@ -45,5 +60,66 @@ class Ship():
                 break
 
         #check if anybody has discovered bodies
+        for i in self.crewmates:
+            for j in self.crewmates:
+                if abs(i.x - j.x) < 500 and abs(i.y - j.y) < 500:
+                    if i.dead == True and j.dead == False and self.meeting == False and not j.id == self.imposter.id:
+                        j.destination = [i.x, i.y]
+                if abs(i.x - j.x) < 100 and abs(i.y - j.y) < 100:
+                    if i.dead == True and j.dead == False and self.meeting == False and not j.id == self.imposter.id:
+                        self.meeting = True
+                        self.meetingLocation = [i.x, i.y]
+                        self.sus = None
+                        QTimer.singleShot(7000, self.removeSus)
+                        QTimer.singleShot(10500, self.removeDead)
+                        QTimer.singleShot(11000, self.endMeeting)
+
+        #meeting logic
+        if self.meeting == True:
+            for i in range(len(self.crewmates)):
+                #if self.imposter.cooldown > 29.5 * 60:
+                #    if self.imposter.id == self.crewmates[i].id:
+                #        self.sus = i
+                crewmatesort = self.crewmates[:]
+                crewmatesort.sort(key=lambda x: x.id, reverse=False)
+                crewmate = crewmatesort[i]
+                if crewmate.dead == False:
+                    crewmate.activity = "meeting"
+                    crewmate.progress = 0
+                    crewmate.destination = [self.meetingLocation[0] + 100 * math.cos(i * (2 * math.pi / len(self.crewmates))),
+                                            self.meetingLocation[1] + 100 * math.sin(i * (2 * math.pi / len(self.crewmates)))]
+                    crewmate.speed = 0.5
 
         QTimer.singleShot(100, self.shipCycle)
+
+    def removeDead(self):
+
+        for crewmate in self.crewmates:
+            if crewmate.dead == True:
+                crewmate.delete()
+
+    def endMeeting(self):
+        for crewmate in self.crewmates:
+
+            QTimer.singleShot(2500, crewmate.setSpeed)
+
+            crewmate.destination = [random.randrange(0,self.screen.width()),
+                                    random.randrange(0,self.screen.height())]
+
+        self.meeting = False
+
+    def removeSus(self):
+        if self.sus == None:
+            self.sus = random.randrange(0,len(self.crewmates))
+
+        if self.crewmates[self.sus].dead == False:
+            for crewmate in self.crewmates:
+                if crewmate.dead == False:
+                    crewmate.dx = -(crewmate.x - self.crewmates[self.sus].x) / 5
+                    crewmate.dy = -(crewmate.y - self.crewmates[self.sus].y) / 5
+                    QTimer.singleShot(50, self.crewmates[self.sus].die)
+
+    def restart(self):
+        for crewmate in self.crewmates:
+            crewmate.delete()
+        self.__init__(self.numCrewmates, self.display)

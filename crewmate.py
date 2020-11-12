@@ -28,7 +28,8 @@ class Crewmate(QMainWindow):
         self.dx = 0
         self.dy = 0
         #speed is low by default because otherwise it gets crazy
-        self.speed = 0.1
+        self.setSpeed()
+
         #random destination
         self.destination = [random.randrange(0,self.screen.width() - self.width),
                             random.randrange(0,self.screen.height() - self.height)]
@@ -49,6 +50,9 @@ class Crewmate(QMainWindow):
         self.initUI()
         self.spriteLoop()
         QTimer.singleShot(1, self.update)
+
+    def setSpeed(self):
+        self.speed = 0.1
 
     def initUI(self):
 
@@ -82,7 +86,7 @@ class Crewmate(QMainWindow):
             pixmap = QImage(filename)
             pixmap = toColor(pixmap, self.color)
             pixmap = QPixmap.fromImage(pixmap)
-            print("loaded", filename, "for crewmate", self.id)
+            ##print("loaded", filename, "for crewmate", self.id)
             self.walk.append(pixmap)
 
         #sprite loop for beam in animation
@@ -95,7 +99,7 @@ class Crewmate(QMainWindow):
             if i >= 32:
                 pixmap = toColor(pixmap, self.color)
             pixmap = QPixmap.fromImage(pixmap)
-            print("loaded", filename, "for crewmate", self.id)
+            ##print("loaded", filename, "for crewmate", self.id)
             self.beamIn.append(pixmap)
 
         #sprite loop for death
@@ -106,7 +110,7 @@ class Crewmate(QMainWindow):
             pixmap = QImage(filename)
             pixmap = toColor(pixmap, self.color)
             pixmap = QPixmap.fromImage(pixmap)
-            print("loaded", filename, "for crewmate", self.id)
+            ##print("loaded", filename, "for crewmate", self.id)
             self.deathSprite.append(pixmap)
 
         #set first pixmap to beginning of beamIn
@@ -162,20 +166,19 @@ class Crewmate(QMainWindow):
             self.spriteCount += 1
             self.destination = [self.x, self.y] # prevent movement
 
-        if self.activity == "idle": #idle
-            self.pixmap = self.idle
-
-        if self.activity == "wander": #walk
-            if self.spriteCount >= 12:
-                self.spriteCount = 0
-            self.pixmap = self.walk[self.spriteCount]
-            self.spriteCount += 1
-
-        if self.activity == "die":
+        elif self.activity == "die":
             self.pixmap = self.deathSprite[self.spriteCount]
             self.spriteCount += 1
             if self.spriteCount >= 40:
                 self.spriteCount = 39
+
+        elif abs(self.dx) > 0.2 or abs(self.dy) > 0.2:
+            if self.spriteCount >= 12:
+                self.spriteCount = 0
+            self.pixmap = self.walk[self.spriteCount]
+            self.spriteCount += 1
+        else:
+            self.pixmap = self.idle
 
         #flip when moving left
         if self.dx < 0:
@@ -251,10 +254,11 @@ class Crewmate(QMainWindow):
         QTimer.singleShot(16, self.update)
 
     def die(self):
-        self.dead = True;
-        self.activity = "die"
-        self.destination = [self.x, self.y]
-        self.spriteCount = 0
+        if self.dead == False:
+            self.dead = True;
+            self.activity = "die"
+            self.destination = [self.x, self.y]
+            self.spriteCount = 0
 
     def contextMenuEvent(self, e):
 

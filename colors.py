@@ -17,6 +17,12 @@ def toColor(im, color):
         hue = 60;
     if color == "Cyan":
         hue = 188
+    if color == "Purple":
+        hue = 263
+    if color == "Pink":
+        hue = 310
+    if color == "Blue":
+        hue = 231
 
     for x in range(im.width()):
         for y in range(im.height()):

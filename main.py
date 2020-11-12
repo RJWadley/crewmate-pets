@@ -7,6 +7,6 @@ app = QApplication(sys.argv)
 #get display size
 display = app.primaryScreen()
 
-mothership = Ship(5, display)
+mothership = Ship(8, display)
 
 sys.exit(app.exec_())
