@@ -12,16 +12,19 @@ class Ship():
     def __init__(self, numCrewmates, display):
         self.numCrewmates = numCrewmates
         self.crewmates = []
-        colors = ["Lime", "Red", "Cyan", "Orange", "Yellow", "Purple", "Pink", "Blue"]
-        random.shuffle(colors)
-        #fixme print(colors[numCrewmates - 1])
         self.crewmates = []
         self.display = display
         self.screen = display.size()
         self.meeting = False
         self.sus = None
 
-        for i in range(numCrewmates - 1):
+        QTimer.singleShot(10, self.populateShip)
+
+    def populateShip(self):
+        colors = ["Lime", "Red", "Cyan", "Orange", "Yellow", "Purple", "Pink", "Blue"]
+        random.shuffle(colors)
+        #fixme print(colors[numCrewmates - 1])
+        for i in range(self.numCrewmates - 1):
             crewmate = Crewmate(colors[i], i, self.screen)
             self.crewmates.append(crewmate)
             crewmate.show()
