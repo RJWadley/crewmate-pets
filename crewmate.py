@@ -3,7 +3,7 @@ import os
 import random
 from PySide2.QtGui import *
 from PySide2.QtCore import *
-from PySide2.QtWidgets import QMainWindow, QApplication, QMenu
+from PySide2.QtWidgets import QMainWindow, QMenu
 from colors import *
 
 # for getting images
@@ -28,7 +28,10 @@ class Crewmate(QMainWindow):
         #speed is low by default because otherwise it gets crazy
         self.speed = 0.1
         #random destination
-        self.destination = (random.randrange(0,self.screen.width() - self.width), random.randrange(0,self.screen.height() - self.height))
+        self.destination = [random.randrange(0,self.screen.width() - self.width),
+                            random.randrange(0,self.screen.height() - self.height)]
+        self.zoneSize = 200
+        self.edgeBuffer = 50
         #sprite stuff
         self.progress = 0
         self.activity = "beamIn"
@@ -58,7 +61,7 @@ class Crewmate(QMainWindow):
 
         #sizing and placement
         self.resize(self.width, self.height)
-        self.move(round(self.x), round(self.y))
+        self.move(round(self.x - self.width / 2), round(self.y - self.height))
 
     def loadImages(self):
 
@@ -107,7 +110,7 @@ class Crewmate(QMainWindow):
         #dragging
         if event.button() == Qt.LeftButton:
             self.dragging = True
-            self.draggingPos = event.globalPos() - self.pos()
+            self.draggingPos = event.globalPos() - self.pos() - QPoint(self.width / 2, self.height)
             #keeping a running average to prevent flick back
             self.dxArray = []
             self.dyArray = []
@@ -143,12 +146,12 @@ class Crewmate(QMainWindow):
                 self.activity = "idle"
             self.pixmap = self.beamIn[self.spriteCount]
             self.spriteCount += 1
-            self.destination = (self.x, self.y) # prevent movement
+            self.destination = [self.x, self.y] # prevent movement
 
         if self.activity == "idle": #idle
             self.pixmap = self.idle
 
-        if self.activity == "walk": #walk
+        if self.activity == "wander": #walk
             if self.spriteCount >= 12:
                 self.spriteCount = 0
             self.pixmap = self.walk[self.spriteCount]
@@ -165,18 +168,38 @@ class Crewmate(QMainWindow):
     def update(self):
 
         #activity manager
-        if self.progress >= 30: #only choose a new activity 2x per second
-            self.progress = 1
+        if self.progress >= 120: #only choose a new activity every 2 seconds
             if not (self.activity == "beamIn"):
                 randomNum = random.randrange(0,2)
-                if randomNum == 1: #walk somewhere
-                    self.activity = "walk"
-                    if (abs(self.destination[0] - self.x) < 50) and (abs(self.destination[1] - self.y) < 50):
-                        self.destination = (random.randrange(0,self.screen.width() - self.width), random.randrange(0,self.screen.height() - self.height))
 
+                if randomNum == 1: #walk somewhere
+                    self.activity = "wander"
                 elif randomNum == 0: # stand idle
                     self.activity = "idle"
-                    self.destination = (self.x, self.y)
+
+            #restart with some variation
+            self.progress = random.randrange(-20, 20)
+
+        if self.activity == "wander":
+            if (abs(self.destination[0] - self.x) < 10) and (abs(self.destination[1] - self.y) < 10):
+                for i in range(10):
+                    #round position for randranges
+                    self.x = round(self.x)
+                    self.y = round(self.y)
+                    self.destination = [random.randrange(round(self.x) - 300, round(self.x) + 300),
+                                        random.randrange(round(self.y) - 300, round(self.y) + 300)]
+
+                    if (self.destination[0] > self.edgeBuffer and self.destination[0] < self.zoneSize) or (self.destination[0] < self.screen.width() - self.edgeBuffer and self.destination[0] > self.screen.width() - self.zoneSize):
+                        if (self.destination[1] > self.edgeBuffer + 100 and self.destination[1] + 100 < self.zoneSize) or (self.destination[1] < self.screen.height() - self.edgeBuffer and self.destination[1] > self.screen.height() - self.zoneSize):
+                            break
+                    else:
+                        self.destination[0] = max(self.destination[0], self.edgeBuffer)
+                        self.destination[1] = max(self.destination[1], self.edgeBuffer + 100)
+                        self.destination[0] = min(self.destination[0], self.screen.width() - self.edgeBuffer)
+                        self.destination[1] = min(self.destination[1], self.screen.height() - self.edgeBuffer)
+
+        if self.activity == "idle":
+            self.destination = [self.x, self.y]
 
         self.progress += 1
 
@@ -202,7 +225,7 @@ class Crewmate(QMainWindow):
         self.dx *= 0.9
         self.dy *= 0.9
 
-        self.move(round(self.x), round(self.y))
+        self.move(round(self.x - self.width / 2), round(self.y - self.height))
 
         QTimer.singleShot(16, self.update)
 
