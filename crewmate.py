@@ -78,6 +78,13 @@ class Crewmate(QMainWindow):
         #then convert to pixmap in place
         self.idle = QPixmap.fromImage(self.idle)
 
+        #create QImage and color it
+        idle = os.path.join('img', 'default','ejected.png')
+        self.ejected = QImage(idle)
+        self.ejected = toColor(self.ejected, self.color)
+        #then convert to pixmap in place
+        self.ejected = QPixmap.fromImage(self.ejected)
+
         #sprite loop for walking
         self.walk = []
         for i in range(12):
@@ -135,12 +142,13 @@ class Crewmate(QMainWindow):
 
     def mouseReleaseEvent(self, event):
         self.dragging = False
+        self.activity = "idle"
 
     def mouseMoveEvent(self, event):
         if Qt.LeftButton and self.dragging == True:
 
             if self.dead == False:
-                self.activity = "idle" #set sprite to idle for now
+                self.activity = "dragging"
             #keep a running average
             self.dxArray.append((event.globalPos() - self.draggingPos).x() - self.x)
             self.dyArray.append((event.globalPos() - self.draggingPos).y() - self.y)
@@ -171,6 +179,9 @@ class Crewmate(QMainWindow):
             self.spriteCount += 1
             if self.spriteCount >= 40:
                 self.spriteCount = 39
+
+        elif self.activity == "dragging":
+            self.pixmap = self.ejected
 
         elif abs(self.dx) > 0.2 or abs(self.dy) > 0.2:
             if self.spriteCount >= 12:
