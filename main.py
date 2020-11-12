@@ -8,7 +8,7 @@ app = QApplication(sys.argv)
 #get display size
 display = app.primaryScreen()
 
-label = QLabel("<font size=40>Loading Crewmates.</font><br>This may take a while")
+label = QLabel("<font size=40>Loading Crewmates</font><br>This may take a while")
 label.move(0,0)
 label.setWindowTitle("Crewmates")
 label.setWindowFlags(Qt.FramelessWindowHint)

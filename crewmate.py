@@ -270,6 +270,9 @@ class Crewmate(QMainWindow):
         close = menu.addAction("~delete all crewmates~")
         close.triggered.connect(sys.exit)
 
+        close = menu.addAction("~kill this crewmate~")
+        close.triggered.connect(self.die)
+
         menu.exec_(e.globalPos())
         self.contenting = True
 

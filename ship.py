@@ -17,6 +17,7 @@ class Ship():
         self.screen = display.size()
         self.meeting = False
         self.sus = None
+        self.crewmatesAlive = False
 
         QTimer.singleShot(10, self.populateShip)
 
@@ -55,6 +56,16 @@ class Ship():
                 crewmate.destination = [-200, random.randrange(0,self.screen.height())]
             QTimer.singleShot(3000, self.restart)
             return
+        #restart if all crewmates dead
+        self.crewmatesAlive = False
+        for crewmate in self.crewmates:
+            if crewmate.dead == False and not crewmate.id == self.imposter.id:
+                self.crewmatesAlive = True
+        if self.crewmatesAlive == False:
+            self.imposter.speed = 1
+            self.imposter.progress = -999
+            self.imposter.destination = [-200, random.randrange(0,self.screen.height())]
+            QTimer.singleShot(3000, self.removeDead)
 
         #remove crewmates that don't exist
         for i in range(len(self.crewmates)):
@@ -65,7 +76,8 @@ class Ship():
         #check if anybody has discovered bodies
         for i in self.crewmates:
             for j in self.crewmates:
-                if abs(i.x - j.x) < 500 and abs(i.y - j.y) < 500:
+                cautionDistance = (self.numCrewmates - len(self.crewmates) + 2) * 100
+                if abs(i.x - j.x) < cautionDistance and abs(i.y - j.y) < cautionDistance:
                     if i.dead == True and j.dead == False and self.meeting == False and not j.id == self.imposter.id:
                         j.destination = [i.x, i.y]
                 if abs(i.x - j.x) < 100 and abs(i.y - j.y) < 100:
