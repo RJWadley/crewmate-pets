@@ -6,7 +6,7 @@ block_cipher = None
 a = Analysis(['main.py'],
              pathex=['C:\\Users\\Shadow\\Documents\\programming\\crewmate-pets'],
              binaries=[],
-             datas=[],
+             datas=[('Crewmate.ico', 'icon')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -30,4 +30,4 @@ exe = EXE(pyz,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False , icon='Red.ico')
+          console=False , icon='Crewmate.ico')

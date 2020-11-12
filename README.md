@@ -2,4 +2,4 @@
 
 build with
 
-pyinstaller -n crewmatePets --onefile --noconsole --icon=Red.ico main.py
+pyinstaller -n crewmatePets --onefile --noconsole --icon=Crewmate.ico main.py --add-data="Crewmate.ico;icon"
