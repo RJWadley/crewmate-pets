@@ -20,6 +20,8 @@ class Crewmate(QMainWindow):
         self.color = color
         self.width = 200
         self.height = 200
+        self.dead = False
+        self.meeting = False
         #random position
         self.x = random.randrange(0,self.screen.width() - self.width)
         self.y = random.randrange(0,self.screen.height() - self.height)
@@ -96,6 +98,17 @@ class Crewmate(QMainWindow):
             print("loaded", filename, "for crewmate", self.id)
             self.beamIn.append(pixmap)
 
+        #sprite loop for death
+        self.deathSprite = []
+        for i in range(40):
+            #create QImage, color it, convert to pixmap, append
+            filename = os.path.join('img', 'default','dead','Dead' + str(i+1).zfill(4) + '.png')
+            pixmap = QImage(filename)
+            pixmap = toColor(pixmap, self.color)
+            pixmap = QPixmap.fromImage(pixmap)
+            print("loaded", filename, "for crewmate", self.id)
+            self.deathSprite.append(pixmap)
+
         #set first pixmap to beginning of beamIn
         self.pixmap = self.beamIn[0]
 
@@ -122,7 +135,8 @@ class Crewmate(QMainWindow):
     def mouseMoveEvent(self, event):
         if Qt.LeftButton and self.dragging == True:
 
-            self.activity = "idle" #set sprite to idle for now
+            if self.dead == False:
+                self.activity = "idle" #set sprite to idle for now
             #keep a running average
             self.dxArray.append((event.globalPos() - self.draggingPos).x() - self.x)
             self.dyArray.append((event.globalPos() - self.draggingPos).y() - self.y)
@@ -157,6 +171,12 @@ class Crewmate(QMainWindow):
             self.pixmap = self.walk[self.spriteCount]
             self.spriteCount += 1
 
+        if self.activity == "die":
+            self.pixmap = self.deathSprite[self.spriteCount]
+            self.spriteCount += 1
+            if self.spriteCount >= 40:
+                self.spriteCount = 39
+
         #flip when moving left
         if self.dx < 0:
             self.pixmap = self.pixmap.transformed(QTransform().scale(-1, 1))
@@ -167,41 +187,42 @@ class Crewmate(QMainWindow):
 
     def update(self):
 
-        #activity manager
-        if self.progress >= 120: #only choose a new activity every 2 seconds
-            if not (self.activity == "beamIn"):
-                randomNum = random.randrange(0,2)
+        if self.dead == False:
+            #activity manager
+            if self.progress >= 120: #only choose a new activity every 2 seconds
+                if not (self.activity == "beamIn"):
+                    randomNum = random.randrange(0,2)
 
-                if randomNum == 1: #walk somewhere
-                    self.activity = "wander"
-                elif randomNum == 0: # stand idle
-                    self.activity = "idle"
+                    if randomNum == 1: #walk somewhere
+                        self.activity = "wander"
+                    elif randomNum == 0: # stand idle
+                        self.activity = "idle"
 
-            #restart with some variation
-            self.progress = random.randrange(-20, 20)
+                #restart with some variation
+                self.progress = random.randrange(-20, 20)
 
-        if self.activity == "wander":
-            if (abs(self.destination[0] - self.x) < 10) and (abs(self.destination[1] - self.y) < 10):
-                for i in range(10):
-                    #round position for randranges
-                    self.x = round(self.x)
-                    self.y = round(self.y)
-                    self.destination = [random.randrange(round(self.x) - 300, round(self.x) + 300),
-                                        random.randrange(round(self.y) - 300, round(self.y) + 300)]
+            self.progress += 1
 
-                    if (self.destination[0] > self.edgeBuffer and self.destination[0] < self.zoneSize) or (self.destination[0] < self.screen.width() - self.edgeBuffer and self.destination[0] > self.screen.width() - self.zoneSize):
-                        if (self.destination[1] > self.edgeBuffer + 100 and self.destination[1] + 100 < self.zoneSize) or (self.destination[1] < self.screen.height() - self.edgeBuffer and self.destination[1] > self.screen.height() - self.zoneSize):
-                            break
-                    else:
-                        self.destination[0] = max(self.destination[0], self.edgeBuffer)
-                        self.destination[1] = max(self.destination[1], self.edgeBuffer + 100)
-                        self.destination[0] = min(self.destination[0], self.screen.width() - self.edgeBuffer)
-                        self.destination[1] = min(self.destination[1], self.screen.height() - self.edgeBuffer)
+            if self.activity == "wander":
+                if (abs(self.destination[0] - self.x) < 10) and (abs(self.destination[1] - self.y) < 10):
+                    for i in range(10):
+                        #round position for randranges
+                        self.x = round(self.x)
+                        self.y = round(self.y)
+                        self.destination = [random.randrange(round(self.x) - 300, round(self.x) + 300),
+                                            random.randrange(round(self.y) - 300, round(self.y) + 300)]
 
-        if self.activity == "idle":
-            self.destination = [self.x, self.y]
+                        if (self.destination[0] > self.edgeBuffer and self.destination[0] < self.zoneSize) or (self.destination[0] < self.screen.width() - self.edgeBuffer and self.destination[0] > self.screen.width() - self.zoneSize):
+                            if (self.destination[1] > self.edgeBuffer + 100 and self.destination[1] + 100 < self.zoneSize) or (self.destination[1] < self.screen.height() - self.edgeBuffer and self.destination[1] > self.screen.height() - self.zoneSize):
+                                break
+                        else:
+                            self.destination[0] = max(self.destination[0], self.edgeBuffer)
+                            self.destination[1] = max(self.destination[1], self.edgeBuffer + 100)
+                            self.destination[0] = min(self.destination[0], self.screen.width() - self.edgeBuffer)
+                            self.destination[1] = min(self.destination[1], self.screen.height() - self.edgeBuffer)
 
-        self.progress += 1
+            if self.activity == "idle":
+                self.destination = [self.x, self.y]
 
         #movement
         if (abs(self.destination[0] - self.x) > 10):
@@ -228,6 +249,12 @@ class Crewmate(QMainWindow):
         self.move(round(self.x - self.width / 2), round(self.y - self.height))
 
         QTimer.singleShot(16, self.update)
+
+    def die(self):
+        self.dead = True;
+        self.activity = "die"
+        self.destination = [self.x, self.y]
+        self.spriteCount = 0
 
     def contextMenuEvent(self, e):
 

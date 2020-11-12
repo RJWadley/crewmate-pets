@@ -44,4 +44,6 @@ class Ship():
                 self.crewmates.pop(i)
                 break
 
+        #check if anybody has discovered bodies
+
         QTimer.singleShot(100, self.shipCycle)

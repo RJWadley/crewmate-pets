@@ -11,6 +11,8 @@ from crewmate import Crewmate
 class Imposter(Crewmate):
     def __init__(self, crewmates, *args, **kwargs):
         self.crewmates = crewmates
+        self.cooldown = 0
+        self.target = None
         super(Imposter, self).__init__(*args, **kwargs)
         print("success")
 
@@ -19,14 +21,14 @@ class Imposter(Crewmate):
         #activity manager
         if self.progress >= 120: #only choose a new activity every 2 seconds
             if not (self.activity == "beamIn"):
-                randomNum = random.randrange(0,3)
+                randomNum = random.randrange(0,5)
                 if randomNum == 0: #walk somewhere
                     self.activity = "wander"
                 elif randomNum == 1: # stand idle
                     self.activity = "idle"
-                elif randomNum == 2: # follow a crewmate
+                elif randomNum < 5: # follow a crewmate
                     self.activity = "follow"
-                print(randomNum)
+                print(self.activity)
 
             #restart with some variation
             self.progress = random.randrange(-20, 20)
@@ -34,16 +36,42 @@ class Imposter(Crewmate):
         if self.activity == "follow":
             minDistance = None
             for crewmate in self.crewmates:
-                if not self.id == crewmate.id:
+                if not self.id == crewmate.id and crewmate.dead == False:
                     distance = (crewmate.x - self.x) ** 2 + (crewmate.y - self.y) ** 2
                     if minDistance == None:
                         minDistance = distance
+                        self.destination = [crewmate.x, crewmate.y]
+                        self.target = crewmate.id
                     elif distance < minDistance:
                         minDistance = distance
                         self.destination = [crewmate.x, crewmate.y]
-            if minDistance < 100 ** 2:
-                self.destination = [self.x, self.y]
+                        self.target = crewmate.id
+            if not minDistance == None:
+                if minDistance > 50 ** 2:
+                    self.target = None
+                if minDistance < 100 ** 2:
+                    self.destination = [self.x, self.y]
 
+        #kill logic
+        if self.cooldown > 0:
+            self.cooldown -= 1
+
+        if self.cooldown == 0 and not self.target == None:
+            for crewmate in self.crewmates:
+                if crewmate.id == self.target:
+                    print("target:", crewmate.color)
+                    distance = (crewmate.x - self.x) ** 2 + (crewmate.y - self.y) ** 2
+                    if distance < 60 ** 2:
+                        print("kill")
+                        self.dx = (crewmate.x - self.x) * 2 / 10
+                        self.dy = (crewmate.y - self.y) * 2 / 10
+                        self.target = None;
+                        self.activity = "idle"
+                        self.cooldown = 600
+                        QTimer.singleShot(100, crewmate.die)
+
+                    else:
+                        self.destination = [crewmate.x, crewmate.y]
 
         super(Imposter, self).update()
 
