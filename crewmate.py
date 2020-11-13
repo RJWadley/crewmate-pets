@@ -142,13 +142,16 @@ class Crewmate(QMainWindow):
 
     def mouseReleaseEvent(self, event):
         self.dragging = False
-        self.activity = "idle"
+        if self.dead == False:
+            self.activity = "idle"
 
     def mouseMoveEvent(self, event):
         if Qt.LeftButton and self.dragging == True:
 
             if self.dead == False:
                 self.activity = "dragging"
+            else:
+                self.activity = "die"
             #keep a running average
             self.dxArray.append((event.globalPos() - self.draggingPos).x() - self.x)
             self.dyArray.append((event.globalPos() - self.draggingPos).y() - self.y)
