@@ -51,10 +51,11 @@ class Ship():
         #restart if needed
         if (len(self.crewmates) <= 2 or self.imposter.dead == True or self.imposter.exists == False) and self.meeting == False:
             for crewmate in self.crewmates:
-                crewmate.speed = 1
-                crewmate.progress = -999
-                crewmate.activity = ""
-                crewmate.destination = [-200, random.randrange(0,self.screen.height())]
+                if not crewmate.id == self.imposter.id:
+                    crewmate.speed = 1
+                    crewmate.progress = -999
+                    crewmate.activity = ""
+                    crewmate.destination = [-200, random.randrange(0,self.screen.height())]
             QTimer.singleShot(3000, self.restart)
             return
         #restart if all crewmates dead
