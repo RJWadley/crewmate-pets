@@ -53,6 +53,7 @@ class Ship():
             for crewmate in self.crewmates:
                 crewmate.speed = 1
                 crewmate.progress = -999
+                crewmate.activity = ""
                 crewmate.destination = [-200, random.randrange(0,self.screen.height())]
             QTimer.singleShot(3000, self.restart)
             return
@@ -82,6 +83,10 @@ class Ship():
                         j.destination = [i.x, i.y]
                 if abs(i.x - j.x) < 100 and abs(i.y - j.y) < 100:
                     if i.dead == True and j.dead == False and self.meeting == False and not j.id == self.imposter.id:
+                        for k in range(len(self.crewmates)):
+                            if self.imposter.cooldown > 29.5 * 60:
+                                if self.imposter.id == self.crewmates[k].id:
+                                    self.sus = k
                         self.meeting = True
                         self.meetingLocation = [i.x, i.y]
                         self.sus = None
@@ -92,9 +97,6 @@ class Ship():
         #meeting logic
         if self.meeting == True:
             for i in range(len(self.crewmates)):
-                #if self.imposter.cooldown > 29.5 * 60:
-                #    if self.imposter.id == self.crewmates[i].id:
-                #        self.sus = i
                 crewmatesort = self.crewmates[:]
                 crewmatesort.sort(key=lambda x: x.id, reverse=False)
                 crewmate = crewmatesort[i]
